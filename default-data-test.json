@@ -1,0 +1,21 @@
+{
+    "myFuckingName": "Full name",
+    "headingData": [
+        { "id": 1, "label": "Tax ID", "value": "#number" },
+        { "id": 2, "label": "Phone Number", "value": "123-456-789" },
+        { "id": 3, "label": "Address", "value": "Fake Street 123" },
+        { "id": 4, "label": "Zip Code", "value": "123321" },
+        { "id": 5, "label": "Email", "value": "someone@somedomain.someextension" }
+    ],
+    "coinToUse": "US$",
+    "itemsToCharge": [
+        { "id": 1, "description": "Monthly Salary", "total": 1 }
+    ],
+    "termsAndConditionsData": {
+        "bank": "Evil bank",
+        "account": "#number",
+        "routingNumber": "Evil routing number",
+        "bankCity": "Evil bank's city",
+        "bankAddress": "Evil bank's branch"
+    }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "invoice-pdf-generator",
+  "version": "1.0.0",
+  "description": "The faster way I can create my invoices :)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "unferna",
+  "license": "MIT",
+  "dependencies": {
+    "html-pdf-node": "^1.0.8"
+  }
+}
