@@ -1,21 +1,12 @@
 const invoiceData = require("../default-data.json")
 const styles = require("./HtmlReportStyles")
 
-const addLeftZeroIfNeeded = number => {
-    if( number < 0 && number > -10 ) {
-        return `${number}`.replace("-", "-0")
-    
-    } else if ( number >= 0 && number < 10 ) {
-        return `0${ number }`
-    }
-
-    return String(number)
-}
+const Utils = require("../Utils")
 
 const now = new Date()
 const invoiceDateString = [
-    addLeftZeroIfNeeded( now.getDate() ),
-    addLeftZeroIfNeeded( now.getMonth() + 1 ),
+    Utils.addLeftZeroIfNeeded( now.getDate() ),
+    Utils.addLeftZeroIfNeeded( now.getMonth() + 1 ),
     now.getFullYear()
 ].join("/")
 
@@ -49,7 +40,7 @@ const FullReport = () => {
             </div>
 
             <ul class="invoice-heading-data-list">
-                <li><strong>${ invoiceData.myFuckingName }</strong></li>
+                <li><strong>${ invoiceData.fullName }</strong></li>
                 ${ invoiceData.headingData.map(data => (
                     `<li>${ data.label }: ${ data.value }</li>`
                 )).join("") }

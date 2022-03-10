@@ -1,5 +1,6 @@
 {
-    "myFuckingName": "Full name",
+    "firstName": "Fernando",
+    "fullName": "Fernando Florez Gomez",
     "headingData": [
         { "id": 1, "label": "Tax ID", "value": "#number" },
         { "id": 2, "label": "Phone Number", "value": "123-456-789" },
