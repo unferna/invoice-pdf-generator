@@ -9,7 +9,10 @@ const Utils = require("./Utils")
 const fs = require("fs")
 
 const defaultPathFileContainer = "./default-path.txt"
-const firstName = require("./default-data.json").firstName
+
+const invoiceData = require("./default-data.json")
+let invoiceDataCopy = invoiceData
+const firstName = invoiceData.firstName
 
 const months = [
     "January",
@@ -25,10 +28,6 @@ const months = [
     "November",
     "December"
 ]
-
-const range = (size, startAt = 0) => {
-    return [ ...Array(size).keys() ].map(item => item + startAt)
-}
 
 const exportPDF = (monthPath, fileName) => {
     fs.mkdir(monthPath, { recursive: true }, (err, _) => {
@@ -46,7 +45,7 @@ const exportPDF = (monthPath, fileName) => {
             }
         
             const file = {
-                content
+                content: content.reportHTMLString()
             }
         
             pdf.generatePdf(file, options).then(pdfBuffer => {
@@ -95,17 +94,72 @@ const main = async () => {
         const month = await userInput.input(`Choose a month\n${monthsString}`)
         const monthIndex = parseInt(month) - 1
         
-        if( !range(12).includes(monthIndex) ) {
+        if( !Utils.range(12).includes(monthIndex) ) {
             console.log(`${cliColors.FgRed}Invalid month!`)
             process.exit()
         }
 
         console.log(months[monthIndex], "selected!")
+        const now = new Date()
+        const defaultDateString = now.todayString()
+        console.log("Select invoice date with dd/MM/yyyy format. Leave it blank to use default.")
+        const newDate = await userInput.input(`Default ${ defaultDateString }`, cliColors.FgGreen)
 
-        const latestTemplate = await userInput.yesNoQuestion(`Do you wanna use the default template based in the latest one? [y/n]`)
+        if( !newDate.isEmpty() ) {
+            if( Utils.validateUserInputDate(newDate) ) {
+                content.invoiceDateString = newDate
+            
+            } else {
+                console.log(`${cliColors.FgRed}Invalid Date typed. Default Selected${cliColors.FgWhite}`)
+                content.invoiceDateString = defaultDateString
+            }
+
+        } else {
+            content.invoiceDateString = defaultDateString
+        }
+
+        const latestTemplate = await userInput.yesNoQuestion(`Do you wanna use the default template based in the latest one?`)
 
         if( !latestTemplate ) {
             // Normal Process here
+            let newFirstName = invoiceData.firstName
+            let newFullName = invoiceData.fullName
+            let newHeadingData = invoiceData.headingData
+            let newTermsAndConditionsData = invoiceData.termsAndConditionsData
+            let newItemsToCharge = invoiceData.itemsToCharge
+
+            // Heading
+            if( await userInput.yesNoQuestion("Would you like to change heading?") ) {
+                newFirstName = await userInput.input(`First name (${ firstName }):`, cliColors.FgGreen)
+                newFullName = await userInput.input(`Full name (${ invoiceData.fullName }):`)
+
+                let headingIterator = 0
+
+                do {
+                    const item = invoiceData.headingData[ headingIterator ]
+                    const input = await userInput.input(`${ item.label } (${ item.value }):`, cliColors.FgGreen)
+                    if( !input.isEmpty() ) {
+                        newHeadingData[headingIterator].value = input
+                    } 
+
+                    headingIterator += 1
+                } while ( headingIterator < newHeadingData.length )
+            }
+
+            // Terms and conditions
+            if( await userInput.yesNoQuestion("Would you like to change the Terms and condtions?") ) {
+                let termsAndConditionsIterator = 0
+
+                do {
+                    const item = invoiceData.termsAndConditionsData[ termsAndConditionsIterator ]
+                    const input = await userInput.input(`${ item.label } (${ item.value })`, cliColors.FgGreen)
+                    if( !input.isEmpty() ) {
+                        newHeadingData[headingIterator].value = input
+                    } 
+
+                    termsAndConditionsIterator += 1
+                } while ( termsAndConditionsIterator < newTermsAndConditionsData.length )
+            }
         } else {
             const defaultPath = loadDefaultPath()
             let selectedBasePath = defaultPath
@@ -129,9 +183,10 @@ const main = async () => {
                 selectedBasePath += "/"
             }
             
+            content.loadInvoiceData(invoiceData)
             exportPDF(selectedBasePath + monthPath, fileNameFor(months[monthIndex]))
         }
-        
+
     } while( shouldProcessRepeat )
 }
 

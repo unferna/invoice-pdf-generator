@@ -20,7 +20,7 @@ class UserInput {
     }
 
     async yesNoQuestion(prompt) {
-        let userTyping = await this.input(prompt)
+        let userTyping = await this.input(prompt + " [y/n]")
         userTyping = userTyping.toLowerCase().trim()
 
         const criteria = ["y", "yes", "yeah"]
