@@ -1,3 +1,5 @@
+require("events").EventEmitter.defaultMaxListeners = 20
+
 require("./Prototypes")
 
 const pdf = require("html-pdf-node")
@@ -10,7 +12,8 @@ const fs = require("fs")
 
 const defaultPathFileContainer = "./default-path.txt"
 
-const invoiceData = require("./default-data.json")
+const INVOICE_DATA_PATH = "./default-data.json"
+const invoiceData = require(INVOICE_DATA_PATH)
 let invoiceDataCopy = invoiceData
 const firstName = invoiceData.firstName
 
@@ -62,12 +65,16 @@ const exportPDF = (monthPath, fileName) => {
 }
 
 const loadDefaultPath = () => {
+    const fileDescriptor = fs.openSync(defaultPathFileContainer)
     const data = fs.readFileSync(defaultPathFileContainer, { encoding: "utf8", flag: "r" })
+    fs.closeSync(fileDescriptor)
     return data.toString().trim()
 }
 
 const savePathAsDefault = path => {
+    const fileDescriptor = fs.openSync(path)
     fs.writeFileSync(defaultPathFileContainer, path)
+    fs.closeSync(fileDescriptor)
 }
 
 const fileNameFor = month => {
@@ -81,6 +88,38 @@ const fileNameFor = month => {
     }
 
     return resultName + " Invoice - " + month + ".pdf"
+}
+
+const updateJson = newData => {
+    const fileDescriptor = fs.openSync(INVOICE_DATA_PATH)
+    fs.writeFileSync(INVOICE_DATA_PATH, JSON.stringify(newData, null, 4), { encoding: "utf-8" })
+    fs.closeSync(fileDescriptor)
+}
+
+const prepareExport = async (monthIndex) => {
+    const defaultPath = loadDefaultPath()
+    let selectedBasePath = defaultPath
+
+    if( !defaultPath.isEmpty() ) {
+        console.log("Select a path. Leave it blank to use default")
+        const newPath = await userInput.input(`Current: ${ defaultPath }`, cliColors.FgGreen)
+        
+        if( !newPath.isEmpty() ) {
+            selectedBasePath = newPath    
+        }
+
+    } else {
+        selectedBasePath = await userInput.input("Path destination:")
+        savePathAsDefault(path)
+    }
+
+    const monthPath = Utils.addLeftZeroIfNeeded(monthIndex + 1) + " - " + months[monthIndex]
+
+    if( selectedBasePath.lastCharacter() != "/" ) {
+        selectedBasePath += "/"
+    }
+
+    exportPDF(selectedBasePath + monthPath, fileNameFor(months[monthIndex]))
 }
 
 const main = async () => {
@@ -154,38 +193,26 @@ const main = async () => {
                     const item = invoiceData.termsAndConditionsData[ termsAndConditionsIterator ]
                     const input = await userInput.input(`${ item.label } (${ item.value })`, cliColors.FgGreen)
                     if( !input.isEmpty() ) {
-                        newHeadingData[headingIterator].value = input
+                        newTermsAndConditionsData[termsAndConditionsIterator].value = input
                     } 
 
                     termsAndConditionsIterator += 1
                 } while ( termsAndConditionsIterator < newTermsAndConditionsData.length )
             }
-        } else {
-            const defaultPath = loadDefaultPath()
-            let selectedBasePath = defaultPath
 
-            if( !defaultPath.isEmpty() ) {
-                console.log("Select a path. Leave it blank to use default")
-                const newPath = await userInput.input(`Current: ${ defaultPath }`, cliColors.FgGreen)
-                
-                if( !newPath.isEmpty() ) {
-                    selectedBasePath = newPath    
-                }
-
-            } else {
-                selectedBasePath = await userInput.input("Path destination:")
-                savePathAsDefault(path)
-            }
-        
-            const monthPath = Utils.addLeftZeroIfNeeded(monthIndex + 1) + " - " + months[monthIndex]
-        
-            if( selectedBasePath.lastCharacter() != "/" ) {
-                selectedBasePath += "/"
-            }
+            invoiceDataCopy.firstName = newFirstName
+            invoiceDataCopy.fullName = newFullName
+            invoiceDataCopy.headingData = newHeadingData
+            invoiceDataCopy.termsAndConditionsData = newTermsAndConditionsData
+            updateJson(invoiceDataCopy)
             
+            content.loadInvoiceData(invoiceDataCopy)
+
+        } else {
             content.loadInvoiceData(invoiceData)
-            exportPDF(selectedBasePath + monthPath, fileNameFor(months[monthIndex]))
         }
+
+        prepareExport(monthIndex)
 
     } while( shouldProcessRepeat )
 }

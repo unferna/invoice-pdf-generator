@@ -25,7 +25,7 @@ class PDFReport {
         }).value
 
         const account = termsAndConditionsData.find(item => {
-            return item.key === "bank"
+            return item.key === "account"
         }).value
 
         const routingNumber = termsAndConditionsData.find(item => {
