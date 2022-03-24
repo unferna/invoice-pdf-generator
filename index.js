@@ -1,4 +1,4 @@
-require("events").EventEmitter.defaultMaxListeners = 20
+require("events").EventEmitter.defaultMaxListeners = 0
 
 require("./Prototypes")
 
@@ -32,6 +32,14 @@ const months = [
     "December"
 ]
 
+const printError = message => {
+    console.log(cliColors.FgRed + message + cliColors.FgWhite)
+}
+
+const printSuccess = message => {
+    console.log(cliColors.FgGreen + message + cliColors.FgWhite)
+}
+
 const exportPDF = (monthPath, fileName) => {
     fs.mkdir(monthPath, { recursive: true }, (err, _) => {
         if(!err) {
@@ -57,7 +65,7 @@ const exportPDF = (monthPath, fileName) => {
             })
         
         } else {
-            console.log(cliColors.FgRed + "An error has ocurred!")
+            printError("An error has ocurred!")
             console.log(err)
             process.exit()
         }
@@ -122,6 +130,12 @@ const prepareExport = async (monthIndex) => {
     exportPDF(selectedBasePath + monthPath, fileNameFor(months[monthIndex]))
 }
 
+const nextItemIdFor = itemsToCharge => {
+    const currentIds = itemsToCharge.map(item => item.id)
+    const lastItem = currentIds.pop()
+    return lastItem + 1
+}
+
 const main = async () => {
     let shouldProcessRepeat = false
 
@@ -134,7 +148,7 @@ const main = async () => {
         const monthIndex = parseInt(month) - 1
         
         if( !Utils.range(12).includes(monthIndex) ) {
-            console.log(`${cliColors.FgRed}Invalid month!`)
+            printError("Invalid Month!")
             process.exit()
         }
 
@@ -149,7 +163,7 @@ const main = async () => {
                 content.invoiceDateString = newDate
             
             } else {
-                console.log(`${cliColors.FgRed}Invalid Date typed. Default Selected${cliColors.FgWhite}`)
+                printError("Invalid Date Typed. Default Selected")
                 content.invoiceDateString = defaultDateString
             }
 
@@ -200,10 +214,56 @@ const main = async () => {
                 } while ( termsAndConditionsIterator < newTermsAndConditionsData.length )
             }
 
+            let itemsToChargeChangesDone = false
+            
+            do {
+                console.log(`${cliColors.FgYellow}Current Items${cliColors.FgWhite}`)
+                console.log(JSON.stringify(newItemsToCharge, null, 2))
+                if( await userInput.yesNoQuestion("Would you like to modify any of the items or add a new one?") ) {
+                    const userSelection = await userInput.input(`1 - Add one more item\n2 - Delete one item\nEnter - Continue`)
+
+                    switch( userSelection.trim() ) {
+                        case "1":
+                            const newItemDescription = await userInput.input("Description:")
+                            const newItemValue = await userInput.input("Total:")
+                            
+                            newItemsToCharge.push({ 
+                                id: nextItemIdFor(invoiceData.itemsToCharge),
+                                description: newItemDescription,
+                                total: parseFloat(newItemValue)
+                            })
+                            
+                            printSuccess("Added!\n")
+                        break
+
+                        case "2":
+                            const idString = await userInput.input("Item ID:")
+                            const id = parseInt(idString)
+                            const existingIds = newItemsToCharge.map(item => item.id)
+                            
+                            if( existingIds.includes(id) ) {
+                                newItemsToCharge = newItemsToCharge.filter(item => item.id != id)
+                                printSuccess("Deleted!\n")
+                            
+                            } else {
+                                printError("Invalid ID!\n")
+                            }
+                        break
+
+                        default:
+                            itemsToChargeChangesDone = true
+                    }
+                } else {
+                    itemsToChargeChangesDone = true
+                }
+
+            } while( !itemsToChargeChangesDone )
+            
             invoiceDataCopy.firstName = newFirstName
             invoiceDataCopy.fullName = newFullName
             invoiceDataCopy.headingData = newHeadingData
             invoiceDataCopy.termsAndConditionsData = newTermsAndConditionsData
+            invoiceDataCopy.itemsToCharge = newItemsToCharge
             updateJson(invoiceDataCopy)
             
             content.loadInvoiceData(invoiceDataCopy)
