@@ -12,11 +12,11 @@
     "itemsToCharge": [
         { "id": 1, "description": "Monthly Salary", "total": 1 }
     ],
-    "termsAndConditionsData": {
-        "bank": "Evil bank",
-        "account": "#number",
-        "routingNumber": "Evil routing number",
-        "bankCity": "Evil bank's city",
-        "bankAddress": "Evil bank's branch"
-    }
+    "termsAndConditionsData": [
+        { "key": "bank", "label": "Bank", "value": "Evil Bank" },
+        { "key": "account", "label": "Account", "value": "#number" },
+        { "key": "routingNumber", "label": "Routing Number", "value": "Evil Router Number" },
+        { "key": "bankCity", "label": "Bank City", "value": "Evil bank's City" },
+        { "key": "bankAddress", "label": "Bank Address", "value": "Evil bank's adress" }
+    ]
 }
