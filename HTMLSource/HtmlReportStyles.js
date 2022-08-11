@@ -78,8 +78,4 @@ module.exports = `
     border-bottom: ${ tableFooterThickerBorder };
     font-weight: bold;
 }
-
-.invoice-terms-and-conditions p {
-    line-height: 1.4rem;
-}
 `
