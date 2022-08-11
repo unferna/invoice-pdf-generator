@@ -178,7 +178,6 @@ const main = async () => {
             let newFirstName = invoiceData.firstName
             let newFullName = invoiceData.fullName
             let newHeadingData = invoiceData.headingData
-            let newTermsAndConditionsData = invoiceData.termsAndConditionsData
             let newItemsToCharge = invoiceData.itemsToCharge
 
             // Heading
@@ -197,21 +196,6 @@ const main = async () => {
 
                     headingIterator += 1
                 } while ( headingIterator < newHeadingData.length )
-            }
-
-            // Terms and conditions
-            if( await userInput.yesNoQuestion("Would you like to change the Terms and condtions?") ) {
-                let termsAndConditionsIterator = 0
-
-                do {
-                    const item = invoiceData.termsAndConditionsData[ termsAndConditionsIterator ]
-                    const input = await userInput.input(`${ item.label } (${ item.value })`, cliColors.FgGreen)
-                    if( !input.isEmpty() ) {
-                        newTermsAndConditionsData[termsAndConditionsIterator].value = input
-                    } 
-
-                    termsAndConditionsIterator += 1
-                } while ( termsAndConditionsIterator < newTermsAndConditionsData.length )
             }
 
             let itemsToChargeChangesDone = false
@@ -262,7 +246,6 @@ const main = async () => {
             invoiceDataCopy.firstName = newFirstName
             invoiceDataCopy.fullName = newFullName
             invoiceDataCopy.headingData = newHeadingData
-            invoiceDataCopy.termsAndConditionsData = newTermsAndConditionsData
             invoiceDataCopy.itemsToCharge = newItemsToCharge
             updateJson(invoiceDataCopy)
             

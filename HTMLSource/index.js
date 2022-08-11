@@ -18,37 +18,6 @@ class PDFReport {
             .reduce((prev, current) => prev + current, 0)
     }
 
-    TermsAndCondtionsComponent() {
-        const { termsAndConditionsData } = this.invoiceData
-        const bank = termsAndConditionsData.find(item => {
-            return item.key === "bank"
-        }).value
-
-        const account = termsAndConditionsData.find(item => {
-            return item.key === "account"
-        }).value
-
-        const routingNumber = termsAndConditionsData.find(item => {
-            return item.key === "routingNumber"
-        }).value
-
-        const bankCity = termsAndConditionsData.find(item => {
-            return item.key === "bankCity"
-        }).value
-
-        const bankAddress = termsAndConditionsData.find(item => {
-            return item.key === "bankAddress"
-        }).value
-
-        const resultString = `<div class="invoice-terms-and-conditions">
-                <h3>TERMS & CONDITIONS</h3>
-    
-                <p>Please transfer:<br /><br />$${ this.totalInvoice } to ${ bank } Account ${ account }<br />Routing Number: ${ routingNumber }<br />Bank Branch Address:<br />${ bankCity }<br />${ bankAddress }</p>
-            </div>`
-
-        return resultString
-    }
-
     reportHTMLString() {
         return `
         <!DOCTYPE html>
@@ -105,7 +74,6 @@ class PDFReport {
                         </tr>
                     </tfoot>
                 </table>
-                ${ this.TermsAndCondtionsComponent() }
             </div>
         </body>
         </html>
