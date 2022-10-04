@@ -1,5 +1,5 @@
 const range = (size, startAt = 0) => {
-    return [ ...Array(size).keys() ].map(item => item + startAt)
+    return [ ...Array(size + 1).keys() ].map(item => item + startAt)
 }
 
 module.exports = {
